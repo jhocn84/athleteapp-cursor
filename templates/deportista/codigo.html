@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import hero, csrf %}
+{% block title %}Marcar asistencia{% endblock %}
+{% block hero %}{{ hero('Registro de asistencia', 'Marcar asistencia') }}{% endblock %}
+{% block content %}
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Escanea el QR</h2>
+    <p class="muted">Abre la cámara de tu celular y escanea el código QR que muestra tu entrenador. Se abrirá esta app para confirmar tu asistencia.</p>
+    <p class="muted small">Si llegas más de 10 minutos después de la hora de inicio quedarás como "tarde".</p>
+  </div>
+  <div class="card">
+    <h2>O escribe el código</h2>
+    <p class="muted">El entrenador también muestra un código de 6 caracteres.</p>
+    <form method="post" autocomplete="off">
+      {{ csrf() }}
+      <div class="field"><label for="codigo" class="sr-only">Código</label>
+        <input type="text" id="codigo" name="codigo" class="code-input" maxlength="6" minlength="6" required placeholder="A7K9Q2" autofocus></div>
+      <button class="btn primary block" type="submit">Registrar asistencia</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "_macros.html" import hero, csrf, aviso_alcance %}
+{% block title %}Avisos{% endblock %}
+{% block hero %}
+{% call hero(avisos_pendientes ~ ' sin leer', 'Avisos') %}
+  {% if avisos_pendientes %}
+  <form method="post" action="{{ url_for('avisos.leer_todos') }}">{{ csrf() }}<button class="btn" type="submit">Marcar todos como leídos</button></form>
+  {% endif %}
+  {% if g.user.rol in ('admin', 'entrenador') %}<a class="btn primary" href="{{ url_for('avisos.nuevo') }}">Publicar aviso</a>{% endif %}
+{% endcall %}
+{% endblock %}
+{% block content %}
+<div class="stack">
+  {% for a in avisos %}
+  <article class="notice-card {{ 'read' if a.leido }}">
+    <div class="row between">
+      <div class="row">
+        <h2>{{ a.titulo }}</h2>
+        {% if a.prioridad == 'importante' %}<span class="badge yellow">Importante</span>{% endif %}
+        {% if not a.leido %}<span class="badge solid-yellow">Nuevo</span>{% endif %}
+      </div>
+      <span class="small muted">{{ a.creado_en|fecha_hora }}</span>
+    </div>
+    <p>{{ a.contenido }}</p>
+    <div class="row between">
+      <span class="small muted">{{ a.autor or 'Club' }} · Para: {{ aviso_alcance(a) }}</span>
+      <div class="row">
+        {% if not a.leido %}
+        <form method="post" action="{{ url_for('avisos.marcar_leido', aviso_id=a.id) }}">{{ csrf() }}<button class="btn sm soft" type="submit">Marcar como leído</button></form>
+        {% endif %}
+        {% if g.user.rol == 'admin' or a.autor_id == g.user.id %}
+        <form method="post" action="{{ url_for('avisos.eliminar', aviso_id=a.id) }}" data-confirm="¿Eliminar este aviso?">{{ csrf() }}<button class="btn sm link" type="submit">Eliminar</button></form>
+        {% endif %}
+      </div>
+    </div>
+  </article>
+  {% else %}
+  <div class="card empty">No hay avisos por ahora.</div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Error {{ codigo }}{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div class="code-big">{{ codigo }}</div>
+  <h1>{{ 'Acceso denegado' if codigo == 403 else ('Página no encontrada' if codigo == 404 else ('Demasiados intentos' if codigo == 429 else 'Algo salió mal')) }}</h1>
+  <p class="muted">{{ mensaje }}</p>
+  <a class="btn primary mt" href="{{ url_for('inicio') }}">Volver al inicio</a>
+</div>
+{% endblock %}

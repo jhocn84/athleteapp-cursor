@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, password_rules %}
+{% block title %}Mi perfil{% endblock %}
+{% block content %}
+<section class="profile-card mt">
+  <div class="cover">{% if ficha and ficha.dorsal is not none %}<span class="dorsal">{{ ficha.dorsal }}</span>{% endif %}</div>
+  <div class="inner">
+    <div class="top">
+      <span class="avatar lg">{{ g.user|iniciales }}</span>
+      <span class="badge blue">{{ g.user.rol|capitalize }}</span>
+    </div>
+    <div class="name">{{ g.user.nombre }} {{ g.user.apellido }}<span class="verified" title="Cuenta verificada"></span></div>
+    <div class="sub">{{ g.user.email }}</div>
+    {% if ficha %}
+    <div class="stats-row">
+      <div><span class="label">Equipo</span><strong>{{ ficha.equipo or 'Sin asignar' }}</strong></div>
+      <div><span class="label">Posición</span><strong>{{ ficha.posicion or '—' }}</strong></div>
+      <div><span class="label">Dorsal</span><strong>{{ ficha.dorsal if ficha.dorsal is not none else '—' }}</strong></div>
+      <div><span class="label">Documento</span><strong>{{ ficha.documento or '—' }}</strong></div>
+    </div>
+    {% endif %}
+
+    {% if ficha %}
+    <form method="post" class="section mt">
+      {{ csrf() }}<input type="hidden" name="accion" value="contacto">
+      <div><h3>Datos de contacto</h3><p class="desc">Los ve tu entrenador en caso de emergencia.</p></div>
+      <div>
+        <div class="field"><label for="telefono">Teléfono</label><input type="tel" id="telefono" name="telefono" maxlength="20" value="{{ ficha.telefono or '' }}"></div>
+        <div class="field"><label for="contacto_emergencia">Contacto de emergencia</label><input type="text" id="contacto_emergencia" name="contacto_emergencia" maxlength="120" value="{{ ficha.contacto_emergencia or '' }}" placeholder="Nombre y teléfono"></div>
+        <button class="btn" type="submit">Guardar contacto</button>
+      </div>
+    </form>
+    {% endif %}
+
+    <form method="post" class="section {{ 'mt' if not ficha }}">
+      {{ csrf() }}<input type="hidden" name="accion" value="password">
+      <div><h3>Contraseña</h3><p class="desc">Usa una contraseña que no uses en otros sitios.</p></div>
+      <div>
+        <div class="field"><label for="actual">Contraseña actual</label><input type="password" id="actual" name="actual" maxlength="64" required autocomplete="current-password"></div>
+        <div class="form-row">
+          <div class="field"><label for="nueva">Nueva contraseña</label><input type="password" id="nueva" name="nueva" maxlength="64" required autocomplete="new-password" data-password-meter></div>
+          <div class="field"><label for="nueva2">Repite la nueva</label><input type="password" id="nueva2" name="nueva2" maxlength="64" required autocomplete="new-password"></div>
+        </div>
+        <div class="field">{{ password_rules() }}</div>
+        <button class="btn primary" type="submit">Cambiar contraseña</button>
+      </div>
+    </form>
+
+    <div class="setting">
+      <div><h3>Cerrar sesión</h3><p class="desc">Tu sesión se cierra sola tras 2 horas. Ciérrala siempre si usas un equipo compartido.</p></div>
+      <form method="post" action="{{ url_for('auth.logout') }}">{{ csrf() }}<button class="btn soft" type="submit">Cerrar sesión</button></form>
+    </div>
+  </div>
+</section>
+{% endblock %}

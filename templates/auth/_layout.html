@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block flashes %}{% endblock %}
+{% block body %}
+<main class="auth">
+  <div class="auth-card {% block box_class %}{% endblock %}">
+    <div class="cover"></div>
+    <div class="inner">
+      <div class="logo" aria-hidden="true"></div>
+      {% block form %}{% endblock %}
+      <p class="secure-note">Datos protegidos · contraseñas cifradas con bcrypt</p>
+    </div>
+  </div>
+</main>
+{% endblock %}

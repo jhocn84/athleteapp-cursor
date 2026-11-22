@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "_macros.html" import hero, csrf %}
+{% block title %}Lista de asistencia{% endblock %}
+{% block hero %}
+{% call hero(ent.deporte ~ ' · ' ~ ent.equipo, ent.fecha|fecha) %}
+  <a class="btn" href="{{ url_for('entrenador.equipo', equipo_id=ent.equipo_id) }}">Ver equipo</a>
+{% endcall %}
+{% endblock %}
+{% block content %}
+<div class="grid grid-main">
+  <div class="card">
+    <div class="card-head">
+      <div><h2>Lista de asistencia</h2>
+        <div class="small muted">{{ ent.hora_inicio|hora }}{% if ent.hora_fin %}–{{ ent.hora_fin|hora }}{% endif %} · {{ ent.lugar or 'Lugar por confirmar' }}</div></div>
+      <div class="row">
+        <button class="btn sm soft" type="button" data-marcar-todos="presente">Todos presentes</button>
+      </div>
+    </div>
+    {% if jugadores %}
+    <form method="post">
+      {{ csrf() }}
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>Deportista</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+        {% for j in jugadores %}
+          <tr>
+            <td><div class="person"><span class="avatar">{{ j|iniciales }}</span>
+              <div>{{ j.nombre }} {{ j.apellido }}<div class="small muted">{% if j.dorsal is not none %}#{{ j.dorsal }} · {% endif %}{{ j.posicion or 'Sin posición' }}</div></div></div></td>
+            <td>
+              <div class="seg" role="radiogroup" aria-label="Estado de {{ j.nombre }}">
+                {% for e in estados %}
+                <label><input type="radio" name="estado_{{ j.id }}" value="{{ e }}" {{ 'checked' if j.estado == e }}><span>{{ e|capitalize }}</span></label>
+                {% endfor %}
+              </div>
+            </td>
+            <td class="num">{% if j.metodo == 'qr' %}<span class="badge blue">QR</span>{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+      <div class="row between mt">
+        <span class="muted">{{ asistieron }} de {{ jugadores|length }} asistieron ({{ porcentaje }}%)</span>
+        <button class="btn primary" type="submit">Guardar asistencia</button>
+      </div>
+    </form>
+    {% else %}
+      <p class="empty">Este equipo no tiene deportistas activos.</p>
+    {% endif %}
+  </div>
+
+  <div class="stack">
+    <div class="card">
+      <div class="card-head"><h2>Asistencia por QR</h2>{% if qr_activo %}<span class="badge blue">Activo</span>{% endif %}</div>
+      {% if qr_activo %}
+        <div class="qr-box"><img src="{{ url_for('entrenador.qr_svg', ent_id=ent.id) }}" alt="Código QR para registrar asistencia"></div>
+        <p class="label mt">O escriben este código</p>
+        <div class="code">{{ ent.qr_codigo }}</div>
+        <p class="small muted">Vence a las {{ ent.qr_expira.strftime('%H:%M') }}. Recarga la página para ver quién se registró.</p>
+        <div class="row mt">
+          <form method="post" action="{{ url_for('entrenador.generar_qr', ent_id=ent.id) }}">{{ csrf() }}<button class="btn sm soft" type="submit">Generar nuevo</button></form>
+          <form method="post" action="{{ url_for('entrenador.generar_qr', ent_id=ent.id) }}">{{ csrf() }}<input type="hidden" name="accion" value="cerrar"><button class="btn sm" type="submit">Cerrar registro</button></form>
+        </div>
+      {% else %}
+        <p class="muted">Genera un QR para que los deportistas marquen su asistencia desde el celular. Si llegan más de 10 minutos tarde quedan como "tarde".</p>
+        <form method="post" action="{{ url_for('entrenador.generar_qr', ent_id=ent.id) }}">{{ csrf() }}<button class="btn primary block" type="submit">Generar QR</button></form>
+      {% endif %}
+    </div>
+    <div class="card">
+      <h3>Eliminar entrenamiento</h3>
+      <p class="small muted mt-sm">Se borrará también la asistencia registrada.</p>
+      <form method="post" action="{{ url_for('entrenador.eliminar_entrenamiento', ent_id=ent.id) }}" data-confirm="¿Eliminar este entrenamiento y su asistencia?">
+        {{ csrf() }}<button class="btn sm danger" type="submit">Eliminar</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

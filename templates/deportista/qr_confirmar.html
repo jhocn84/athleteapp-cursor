@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "_macros.html" import hero, csrf %}
+{% block title %}Confirmar asistencia{% endblock %}
+{% block hero %}{{ hero('Código QR', 'Confirmar asistencia') }}{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="label">{{ ent.equipo }}</div>
+  <h2 class="mt">{{ ent.fecha|fecha }} · {{ ent.hora_inicio|hora }}</h2>
+  <p class="muted">{{ ent.lugar or 'Lugar por confirmar' }}</p>
+  <form method="post">
+    {{ csrf() }}
+    <button class="btn primary" type="submit">Confirmar que estoy aquí</button>
+    <a class="btn" href="{{ url_for('deportista.panel') }}">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

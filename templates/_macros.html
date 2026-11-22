@@ -1,0 +1,44 @@
+{% macro hero(etiqueta, titulo) %}
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="label">{{ etiqueta }}</div>
+      <h1>{{ titulo }}</h1>
+    </div>
+    <div class="row">{{ caller() if caller }}</div>
+  </div>
+</section>
+{% endmacro %}
+
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro estado_pago(estado) -%}
+  {%- if estado == 'pagado' -%}<span class="badge">Pagado</span>
+  {%- elif estado == 'vencido' -%}<span class="badge solid-yellow">Vencido</span>
+  {%- else -%}<span class="badge yellow">Pendiente</span>{%- endif -%}
+{%- endmacro %}
+
+{% macro estado_asistencia(estado) -%}
+  {%- if estado == 'presente' -%}<span class="badge blue">Presente</span>
+  {%- elif estado == 'tarde' -%}<span class="badge yellow">Tarde</span>
+  {%- elif estado == 'justificado' -%}<span class="badge">Justificado</span>
+  {%- elif estado == 'ausente' -%}<span class="badge">Ausente</span>
+  {%- else -%}<span class="faint small">Sin registro</span>{%- endif -%}
+{%- endmacro %}
+
+{% macro aviso_alcance(a) -%}
+  {%- if a.alcance == 'todos' -%}Todo el club
+  {%- elif a.alcance == 'deporte' -%}{{ a.deporte }}
+  {%- else -%}{{ a.equipo }}{%- endif -%}
+{%- endmacro %}
+
+{% macro password_rules() %}
+<div class="meter"><span id="pass-meter"></span></div>
+<ul class="rules" id="pass-rules">
+  <li data-rule="len">8 caracteres o más</li>
+  <li data-rule="upper">Una mayúscula</li>
+  <li data-rule="lower">Una minúscula</li>
+  <li data-rule="digit">Un número</li>
+  <li data-rule="symbol">Un símbolo</li>
+</ul>
+{% endmacro %}

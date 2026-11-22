@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "_macros.html" import hero, estado_asistencia %}
+{% block title %}Mi asistencia{% endblock %}
+{% block hero %}{{ hero('Últimos 6 meses · ' ~ (ficha.equipo or 'Sin equipo'), 'Mi asistencia') }}{% endblock %}
+{% block content %}
+<div class="grid grid-4">
+  <div class="stat"><div class="label">Asistencia</div><div class="value">{{ stats.porcentaje }}%</div></div>
+  <div class="stat"><div class="label">Presente</div><div class="value">{{ stats.conteo.presente }}</div></div>
+  <div class="stat {{ 'warn' if stats.conteo.tarde }}"><div class="label">Tarde</div><div class="value">{{ stats.conteo.tarde }}</div></div>
+  <div class="stat"><div class="label">Ausente / justificado</div><div class="value">{{ stats.conteo.ausente }} / {{ stats.conteo.justificado }}</div></div>
+</div>
+
+{% if serie %}
+<div class="card mt">
+  <div class="card-head"><h2>Asistencia por mes</h2></div>
+  <div class="chart-box"><canvas data-type="line" data-chart='{{ {"labels": serie|map(attribute="mes")|map("periodo")|list, "valores": serie|map(attribute="porcentaje")|list}|tojson|forceescape }}'></canvas></div>
+</div>
+{% endif %}
+
+<div class="card mt">
+  <div class="card-head"><h2>Historial</h2></div>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Fecha</th><th>Hora</th><th>Lugar</th><th>Estado</th><th>Método</th></tr></thead>
+    <tbody>
+    {% for r in registros %}
+      <tr><td>{{ r.fecha|fecha }}</td><td>{{ r.hora_inicio|hora }}</td><td class="muted">{{ r.lugar or '—' }}</td>
+          <td>{{ estado_asistencia(r.estado) }}</td><td class="muted small">{{ {'qr': 'QR / código', 'manual': 'Entrenador'}.get(r.metodo, '—') }}</td></tr>
+    {% else %}
+      <tr><td colspan="5" class="empty">No hay entrenamientos registrados todavía.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>{% endblock %}

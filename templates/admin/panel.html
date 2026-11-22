@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "_macros.html" import hero %}
+{% block title %}Administración{% endblock %}
+{% block hero %}
+{% call hero(hoy|fecha, 'Resumen del club') %}
+  <a class="btn" href="{{ url_for('avisos.nuevo') }}">Publicar aviso</a>
+  <a class="btn primary" href="{{ url_for('admin.pagos') }}">Registrar pagos</a>
+{% endcall %}
+{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="stats-row">
+    <div><span class="label">Deportistas activos</span><strong>{{ tot.deportistas }}</strong></div>
+    <div><span class="label">Entrenadores</span><strong>{{ tot.entrenadores }}</strong></div>
+    <div><span class="label">Equipos</span><strong>{{ tot.equipos }}</strong></div>
+    <div><span class="label">Asistencia (30 días)</span><strong>{{ asistencia_global }}%</strong></div>
+    <div><span class="label">Recaudado este mes</span><strong>{{ pagos.recaudado_mes|dinero }}</strong></div>
+  </div>
+</section>
+
+<div class="grid grid-3 mt">
+  <div class="stat {{ 'warn' if pagos.vencidos }}">
+    <div class="label">Pagos vencidos</div>
+    <div class="value">{{ pagos.vencidos or 0 }}</div>
+    <div class="hint">{{ pagos.monto_vencido|dinero }} por cobrar</div>
+  </div>
+  <div class="stat">
+    <div class="label">Pagos pendientes (al día)</div>
+    <div class="value">{{ pagos.pendientes or 0 }}</div>
+    <div class="hint">{{ pagos.monto_pendiente|dinero }} por vencer</div>
+  </div>
+  <div class="stat {{ 'warn' if tot.sin_equipo }}">
+    <div class="label">Deportistas sin equipo</div>
+    <div class="value">{{ tot.sin_equipo }}</div>
+    <div class="hint">{% if tot.sin_equipo %}<a href="{{ url_for('admin.usuarios', rol='deportista') }}">Asignar equipos</a>{% else %}Todos tienen equipo{% endif %}</div>
+  </div>
+</div>
+
+<div class="grid grid-main mt">
+  <div class="card">
+    <div class="card-head"><h2>Asistencia por equipo</h2><span class="small muted">Últimos 30 días</span></div>
+    {% if equipos %}
+      <div class="chart-box"><canvas data-chart="{{ grafica }}"></canvas></div>
+    {% else %}
+      <p class="empty">Crea equipos para ver la asistencia. <a href="{{ url_for('admin.deportes') }}">Ir a deportes</a></p>
+    {% endif %}
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Pagos vencidos</h2><a class="small" href="{{ url_for('admin.pagos', estado='vencido') }}">Ver todos</a></div>
+    {% for p in vencidos %}
+      <div class="list-row">
+        <div>{{ p.nombre }} {{ p.apellido }}<div class="small muted">{{ p.equipo or 'Sin equipo' }} · {{ p.periodo|periodo }}</div></div>
+        <span class="badge solid-yellow">{{ p.monto|dinero }}</span>
+      </div>
+    {% else %}
+      <p class="empty">No hay pagos vencidos.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>{% endblock %}

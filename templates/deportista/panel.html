@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% from "_macros.html" import estado_pago, aviso_alcance %}
+{% block title %}Mi panel{% endblock %}
+{% block content %}
+{% if not ficha.equipo_id %}
+<div class="flash info">Aún no tienes equipo asignado. La administración del club lo hará pronto.</div>
+<div class="mt"></div>
+{% endif %}
+
+<section class="profile-card">
+  <div class="cover">{% if ficha.dorsal is not none %}<span class="dorsal">{{ ficha.dorsal }}</span>{% endif %}</div>
+  <div class="inner">
+    <div class="top">
+      <span class="avatar lg">{{ g.user|iniciales }}</span>
+      <div class="row">
+        <a class="btn" href="{{ url_for('perfil.ver') }}">Ver perfil</a>
+        <a class="btn primary" href="{{ url_for('deportista.codigo') }}">Marcar asistencia</a>
+      </div>
+    </div>
+    <div class="name">{{ g.user.nombre }} {{ g.user.apellido }}{% if ficha.equipo_id %}<span class="verified" title="Deportista activo con equipo"></span>{% endif %}</div>
+    <div class="sub">{{ g.user.email }}</div>
+    <div class="stats-row">
+      <div><span class="label">Equipo</span><strong>{{ ficha.equipo or 'Sin asignar' }}</strong></div>
+      <div><span class="label">Posición</span><strong>{{ ficha.posicion or '—' }}</strong></div>
+      <div><span class="label">Asistencia total</span><strong>{{ total.porcentaje }}%</strong></div>
+      <div><span class="label">Entrenamientos</span><strong>{{ total.asistio }}</strong></div>
+      <div><span class="label">Racha actual</span><strong>{{ racha }}</strong></div>
+    </div>
+  </div>
+</section>
+
+<div class="grid grid-3 mt">
+  <div class="stat">
+    <div class="label">Asistencia del mes</div>
+    <div class="value">{{ mes.porcentaje }}%</div>
+    <div class="hint">{{ mes.asistio }} de {{ mes.total }} entrenamientos</div>
+  </div>
+  <div class="stat">
+    <div class="label">Próximo entrenamiento</div>
+    {% if proximo %}
+      <div class="value sm">{{ proximo.fecha|fecha_corta }} · {{ proximo.hora_inicio|hora }}</div>
+      <div class="hint">{{ proximo.lugar or 'Lugar por confirmar' }}</div>
+    {% else %}
+      <div class="value sm">—</div><div class="hint">Sin entrenamientos programados</div>
+    {% endif %}
+  </div>
+  <div class="stat {{ 'warn' if pendiente }}">
+    <div class="label">Próximo pago</div>
+    {% if pendiente %}
+      <div class="value sm">{{ pendiente.monto|dinero }}</div>
+      <div class="hint">{{ pendiente.periodo|periodo }} · {{ 'vencido' if pendiente.estado_real == 'vencido' else 'vence el ' ~ (pendiente.fecha_vencimiento|fecha_corta) }}</div>
+    {% else %}
+      <div class="value sm">Al día</div><div class="hint">No tienes pagos pendientes</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mt">
+  <div class="card-head"><h2>Últimos entrenamientos</h2><a class="small" href="{{ url_for('deportista.asistencia') }}">Ver historial</a></div>
+  {% if ultimos %}
+    <div class="strip">{% for r in ultimos %}<span class="{{ r.estado or '' }}" title="{{ r.fecha|fecha }} · {{ r.estado or 'sin registro' }}"></span>{% endfor %}</div>
+    <div class="legend"><span><i class="presente"></i>Presente</span><span><i class="tarde"></i>Tarde</span><span><i class="justificado"></i>Justificado</span><span><i></i>Ausente o sin registro</span></div>
+  {% else %}
+    <p class="empty">Todavía no hay entrenamientos registrados.</p>
+  {% endif %}
+</div>
+
+<div class="grid grid-2 mt">
+  <div class="card">
+    <div class="card-head"><h2>Pagos</h2><a class="small" href="{{ url_for('deportista.pagos') }}">Ver todos</a></div>
+    {% for p in pagos %}
+      <div class="list-row"><span>{{ p.concepto }} · {{ p.periodo|periodo }}</span><span class="row"><span class="muted">{{ p.monto|dinero }}</span>{{ estado_pago(p.estado_real) }}</span></div>
+    {% else %}
+      <p class="empty">No tienes cobros registrados.</p>
+    {% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Avisos</h2><a class="small" href="{{ url_for('avisos.lista') }}">Ver todos</a></div>
+    {% for a in avisos %}
+      <div class="notice {{ 'read' if a.leido }}">
+        <div class="title">{{ a.titulo }}{% if a.prioridad == 'importante' %} <span class="badge yellow">Importante</span>{% endif %}</div>
+        <div class="small muted">{{ a.autor or 'Club' }} · {{ aviso_alcance(a) }} · {{ a.creado_en|fecha_corta }}</div>
+      </div>
+    {% else %}
+      <p class="empty">No hay avisos por ahora.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

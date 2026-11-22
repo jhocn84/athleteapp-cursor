@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "_macros.html" import hero, csrf %}
+{% block title %}Publicar aviso{% endblock %}
+{% block hero %}{{ hero('Comunicación con deportistas', 'Publicar aviso') }}{% endblock %}
+{% block content %}
+<form method="post" class="card">
+  {{ csrf() }}
+  <div class="section">
+    <div><h3>Mensaje</h3><p class="desc">Se mostrará en el panel de cada destinatario con el contador de no leídos.</p></div>
+    <div>
+      <div class="field"><label for="titulo">Título</label><input type="text" id="titulo" name="titulo" maxlength="120" required value="{{ datos.titulo or '' }}" placeholder="Torneo regional el sábado"></div>
+      <div class="field"><label for="contenido">Contenido</label><textarea id="contenido" name="contenido" maxlength="3000" required>{{ datos.contenido or '' }}</textarea></div>
+    </div>
+  </div>
+  <div class="section">
+    <div><h3>Destinatarios</h3><p class="desc">{% if g.user.rol == 'admin' %}Todo el club, un deporte o un equipo.{% else %}Puedes publicar para tus equipos.{% endif %}</p></div>
+    <div>
+      <div class="field"><label for="alcance">Enviar a</label>
+        <select id="alcance" name="alcance">
+          {% if g.user.rol == 'admin' %}
+          <option value="todos" {{ 'selected' if datos.alcance == 'todos' }}>Todo el club</option>
+          <option value="deporte" {{ 'selected' if datos.alcance == 'deporte' }}>Un deporte</option>
+          {% endif %}
+          <option value="equipo" {{ 'selected' if datos.alcance == 'equipo' or g.user.rol != 'admin' }}>Un equipo</option>
+        </select></div>
+      {% if deportes %}
+      <div class="field" data-alcance="deporte"><label for="deporte_id">Deporte</label>
+        <select id="deporte_id" name="deporte_id">{% for d in deportes %}<option value="{{ d.id }}">{{ d.nombre }}</option>{% endfor %}</select></div>
+      {% endif %}
+      <div class="field" data-alcance="equipo"><label for="equipo_id">Equipo</label>
+        <select id="equipo_id" name="equipo_id">{% for e in equipos %}<option value="{{ e.id }}">{{ e.nombre }}</option>{% endfor %}</select></div>
+    </div>
+  </div>
+  <div class="setting">
+    <div><h3>Marcar como importante</h3><p class="desc">Se resalta con una etiqueta amarilla.</p></div>
+    <label class="switch"><input type="checkbox" name="prioridad" value="importante" {{ 'checked' if datos.prioridad == 'importante' }} aria-label="Importante"><span></span></label>
+  </div>
+  <div class="form-foot">
+    <a class="btn" href="{{ url_for('avisos.lista') }}">Cancelar</a>
+    <button class="btn primary" type="submit">Publicar</button>
+  </div>
+</form>
+{% endblock %}

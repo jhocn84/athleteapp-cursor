@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ app_name }}{% endblock %} · {{ app_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+</head>
+<body>
+{% if g.user %}
+{% set ep = request.endpoint or '' %}
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="{{ url_for('inicio') }}"><span class="brand-mark"></span><span class="brand-name">AthleteHub</span></a>
+    <nav class="nav" aria-label="Principal">
+      {% if g.user.rol == 'admin' %}
+        <a href="{{ url_for('admin.panel') }}" class="{{ 'active' if ep == 'admin.panel' }}">Inicio</a>
+        <a href="{{ url_for('admin.usuarios') }}" class="{{ 'active' if ep.startswith('admin.usuario') }}">Usuarios</a>
+        <a href="{{ url_for('admin.deportes') }}" class="{{ 'active' if ep == 'admin.deportes' }}">Deportes</a>
+        <a href="{{ url_for('entrenador.panel') }}" class="{{ 'active' if ep.startswith('entrenador.') }}">Asistencia</a>
+        <a href="{{ url_for('admin.pagos') }}" class="{{ 'active' if ep.startswith('admin.pago') }}">Pagos</a>
+      {% elif g.user.rol == 'entrenador' %}
+        <a href="{{ url_for('entrenador.panel') }}" class="{{ 'active' if ep.startswith('entrenador.') }}">Mis equipos</a>
+      {% else %}
+        <a href="{{ url_for('deportista.panel') }}" class="{{ 'active' if ep == 'deportista.panel' }}">Inicio</a>
+        <a href="{{ url_for('deportista.asistencia') }}" class="{{ 'active' if ep == 'deportista.asistencia' }}">Asistencia</a>
+        <a href="{{ url_for('deportista.pagos') }}" class="{{ 'active' if ep == 'deportista.pagos' }}">Pagos</a>
+        <a href="{{ url_for('deportista.codigo') }}" class="{{ 'active' if ep in ('deportista.codigo', 'deportista.qr_checkin') }}">Marcar asistencia</a>
+      {% endif %}
+      <a href="{{ url_for('avisos.lista') }}" class="{{ 'active' if ep.startswith('avisos.') }}">Avisos{% if avisos_pendientes %}<span class="count">{{ avisos_pendientes }}</span>{% endif %}</a>
+    </nav>
+    <div class="user-menu">
+      <a href="{{ url_for('perfil.ver') }}" class="row" title="Mi perfil">
+        <span class="user-info"><span>{{ g.user.nombre }} {{ g.user.apellido }}</span><br><span class="role">{{ g.user.rol }}</span></span>
+        <span class="avatar">{{ g.user|iniciales }}</span>
+      </a>
+      <form method="post" action="{{ url_for('auth.logout') }}" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn sm soft" type="submit">Salir</button>
+      </form>
+    </div>
+  </div>
+</header>
+{% endif %}
+
+{% block hero %}{% endblock %}
+
+{% block flashes %}{% with mensajes = get_flashed_messages(with_categories=true) %}
+  {% if mensajes %}
+  <div class="flashes" role="status">
+    {% for cat, msg in mensajes %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}{% endblock %}
+
+{% block body %}
+<main class="container mt">{% block content %}{% endblock %}</main>
+{% endblock %}
+
+{% if g.user %}<footer class="foot">{{ app_name }} · Temporada {{ hoy.year }}</footer>{% endif %}
+{% block scripts %}{% endblock %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% from "_macros.html" import hero, csrf %}
+{% block title %}Deportes y equipos{% endblock %}
+{% block hero %}{{ hero('Estructura del club', 'Deportes y equipos') }}{% endblock %}
+{% block content %}
+<div class="grid grid-main">
+  <div class="stack">
+    {% for d in deportes %}
+    <div class="card">
+      <div class="card-head">
+        <div><h2>{{ d.nombre }}</h2>{% if d.descripcion %}<div class="small muted">{{ d.descripcion }}</div>{% endif %}</div>
+        {% if not d.equipos %}
+        <form method="post" data-confirm="¿Eliminar el deporte {{ d.nombre }}?">{{ csrf() }}
+          <input type="hidden" name="accion" value="eliminar_deporte"><input type="hidden" name="deporte_id" value="{{ d.id }}">
+          <button class="btn sm danger" type="submit">Eliminar</button></form>
+        {% endif %}
+      </div>
+      {% if d.equipos %}
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>Equipo</th><th class="num">Deportistas</th><th>Entrenador</th><th></th></tr></thead>
+        <tbody>
+        {% for e in d.equipos %}
+          <tr>
+            <td><a href="{{ url_for('entrenador.equipo', equipo_id=e.id) }}">{{ e.nombre }}</a>{% if e.categoria %}<div class="small muted">{{ e.categoria }}</div>{% endif %}</td>
+            <td class="num">{{ e.jugadores }}</td>
+            <td>
+              <form method="post" class="row">{{ csrf() }}
+                <input type="hidden" name="accion" value="asignar"><input type="hidden" name="equipo_id" value="{{ e.id }}">
+                <select name="entrenador_id" aria-label="Entrenador de {{ e.nombre }}" class="select-sm">
+                  <option value="">Sin entrenador</option>
+                  {% for en in entrenadores %}<option value="{{ en.id }}" {{ 'selected' if en.id == e.entrenador_id }}>{{ en.nombre }} {{ en.apellido }}</option>{% endfor %}
+                </select>
+                <button class="btn sm soft" type="submit">Asignar</button>
+              </form>
+            </td>
+            <td class="num">
+              <form method="post" data-confirm="¿Eliminar {{ e.nombre }}? Sus entrenamientos se borrarán y los deportistas quedarán sin equipo.">{{ csrf() }}
+                <input type="hidden" name="accion" value="eliminar_equipo"><input type="hidden" name="equipo_id" value="{{ e.id }}">
+                <button class="btn sm danger" type="submit">Eliminar</button></form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+      {% else %}
+        <p class="empty">Este deporte aún no tiene equipos.</p>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="card empty">Crea el primer deporte del club.</div>
+    {% endfor %}
+  </div>
+
+  <div class="stack">
+    <div class="card">
+      <h2>Nuevo equipo</h2>
+      <form method="post" class="mt">{{ csrf() }}
+        <input type="hidden" name="accion" value="equipo">
+        <div class="field"><label for="deporte_id">Deporte</label>
+          <select id="deporte_id" name="deporte_id" required>{% for d in deportes %}<option value="{{ d.id }}">{{ d.nombre }}</option>{% endfor %}</select></div>
+        <div class="field"><label for="eq_nombre">Nombre</label><input type="text" id="eq_nombre" name="nombre" maxlength="80" required placeholder="Voleibol Sub-16"></div>
+        <div class="field"><label for="categoria">Categoría</label><input type="text" id="categoria" name="categoria" maxlength="40" placeholder="Sub-16"></div>
+        <div class="field"><label for="entrenador_id">Entrenador</label>
+          <select id="entrenador_id" name="entrenador_id"><option value="">Sin entrenador</option>
+            {% for en in entrenadores %}<option value="{{ en.id }}">{{ en.nombre }} {{ en.apellido }}</option>{% endfor %}</select></div>
+        <button class="btn primary block" type="submit">Crear equipo</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>Nuevo deporte</h2>
+      <form method="post" class="mt">{{ csrf() }}
+        <input type="hidden" name="accion" value="deporte">
+        <div class="field"><label for="dep_nombre">Nombre</label><input type="text" id="dep_nombre" name="nombre" maxlength="60" required placeholder="Baloncesto"></div>
+        <div class="field"><label for="descripcion">Descripción</label><input type="text" id="descripcion" name="descripcion" maxlength="255"></div>
+        <button class="btn block" type="submit">Crear deporte</button>
+      </form>
+      <p class="small muted mt">Para que alguien sea entrenador, cámbiale el rol en <a href="{{ url_for('admin.usuarios') }}">Usuarios</a>.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

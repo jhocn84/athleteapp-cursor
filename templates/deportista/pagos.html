@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_macros.html" import hero, estado_pago %}
+{% block title %}Mis pagos{% endblock %}
+{% block hero %}{{ hero('Mensualidades y cobros', 'Mis pagos') }}{% endblock %}
+{% block content %}
+<div class="grid grid-3">
+  <div class="stat {{ 'warn' if deuda }}"><div class="label">Saldo pendiente</div><div class="value">{{ deuda|dinero }}</div></div>
+  <div class="stat"><div class="label">Total pagado</div><div class="value">{{ pagado|dinero }}</div></div>
+  <div class="stat"><div class="label">Estado</div><div class="value sm">{{ 'Con pagos pendientes' if deuda else 'Al día' }}</div>
+    <div class="hint">Los pagos se registran en la administración del club.</div></div>
+</div>
+<div class="card mt">
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Periodo</th><th>Concepto</th><th>Vence</th><th class="num">Monto</th><th>Estado</th><th>Pagado el</th><th>Método</th></tr></thead>
+    <tbody>
+    {% for p in pagos %}
+      <tr><td>{{ p.periodo|periodo }}</td><td>{{ p.concepto }}</td><td>{{ p.fecha_vencimiento|fecha_corta }}</td>
+          <td class="num">{{ p.monto|dinero }}</td><td>{{ estado_pago(p.estado_real) }}</td>
+          <td class="muted">{{ p.fecha_pago|fecha_corta }}</td><td class="muted">{{ (p.metodo or '—')|capitalize }}</td></tr>
+    {% else %}
+      <tr><td colspan="7" class="empty">No tienes cobros registrados.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}
